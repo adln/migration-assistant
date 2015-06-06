@@ -1,7 +1,16 @@
+body{
+    background: #EFEFEF;
+}
+.container-fluid{
+    background: #FFF;
+    border-radius: 3px;
+    box-shadow: 0px 1px 1px 1px rgba(0,0,0,.2);
+}
 .page-header {
     padding-bottom: 0 !important;
     margin: 0 !important;
     border-bottom: 0 !important;
+    color: #FFF;
 }
 .page-header .navbar-nav {
     float: right;
