@@ -7,11 +7,6 @@ var mongoose = require('mongoose'),
 	mysql = require('mysql'),
 	connection;
 
-function getCols(table) {
-
-}
-
-
 module.exports = function (Processus) {
     return {
 		createConnection: function (req, res, next) {
