@@ -1,13 +1,13 @@
 'use strict';
 
 /* jshint -W098 */
-angular.module('mean.processus').controller('AssociationsController', ['$scope', 'Global', 'Processus', '$state', '$rootScope',
-  function ($scope, Global, Processus, $state, $rootScope) {
+angular.module('mean.processus').controller('AssociationsController', ['$scope', 'Global', 'Processus', '$state', '$rootScope', '$http',
+  function ($scope, Global, Processus, $state, $rootScope, $http) {
     $scope.global = Global;
     $scope.package = {
       name: 'processus'
     };
-    $scope.tables = [
+    $scope.tempTables = [
       {
         name: "Client",
         columns: [
@@ -72,12 +72,21 @@ angular.module('mean.processus').controller('AssociationsController', ['$scope',
         id: 4,
         label: "n - n"
       }];
+    $scope.tables = [];
+    $scope.init = function () {
+      var tables = JSON.parse(localStorage.getItem('tables'));
+      for (var i = 0, length = tables.length; i < length; i++) {
+        $http.get('/api/getTable', { params: { table: tables[i], connection: localStorage.getItem('connection') } })
+          .success(function (results) {
+          $scope.tables.push(results);
+        });
+      }
+      
+    };
 
     
-
-    $scope.drawable = {};
     $scope.associations = [];
-    
+
     $scope.addAssociation = function () {
       var association = {
         first: angular.copy($scope.table1),
@@ -93,7 +102,7 @@ angular.module('mean.processus').controller('AssociationsController', ['$scope',
     $scope.selectKey = function (col) {
       col.selected = !col.selected;
     };
-  
+
     $scope.schemas = function () {
       $state.go('configuration-choix-des-schemas');
     };
