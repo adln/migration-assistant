@@ -35,6 +35,7 @@
     "mongoose": "latest",
     "morgan": "latest",
     "ms": "latest",
+    "mysql": "^2.7.0",
     "nodemailer": "latest",
     "npm": "^2.1.0",
     "passport-facebook": "latest",
