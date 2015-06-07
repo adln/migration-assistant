@@ -7,12 +7,9 @@ angular.module('mean.processus').controller('MongoDBController', ['$scope', 'Glo
     $scope.package = {
       name: 'processus'
     };
-
-    $scope.mysql = function () {
-      $state.go('configuration-mongodb');
-    };
     
     $scope.mongodb = function () {
+      localStorage.setItem('mongodb', this.dbName);
       $state.go('configuration-identification-associations');
     };
     
