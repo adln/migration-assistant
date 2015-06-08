@@ -5,8 +5,9 @@
     </h1>
   </div>
   <p class="lead">Veuillez remplire les champs ci-dessous.</p>
+  <div class="alert alert-danger" ng-show="error" role="alert">Veuillez verifier les informations entrées.</div>
   <hr>
-  <form class="form-horizontal col-md-10 col-md-offset-1" ng-submit="mysql()" method="post">
+  <form class="form-horizontal col-md-10 col-md-offset-1" name="mysqlForm" ng-submit="mysql(mysqlForm.$valid)">
     <div class="form-group">
       <label class="col-md-4 control-label" for="hote">Hôte</label>
       <div class="col-md-8">
@@ -34,7 +35,8 @@
     <div class="form-group">
       <label class="col-md-4 control-label" for="dbName">Base de données</label>
       <div class="col-md-8">
-        <input id="name" data-ng-model="dbName" type="text" placeholder="Le nom de la base de données" class="form-control">
+        <input id="name" data-ng-model="dbName" name="dbName" type="text" placeholder="Le nom de la base de données" class="form-control"
+        required>
       </div>
     </div>
     <div class="form-group" style="padding: 50px;">

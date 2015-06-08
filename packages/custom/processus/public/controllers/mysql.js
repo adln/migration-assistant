@@ -8,22 +8,29 @@ angular.module('mean.processus').controller('MySQLController', ['$scope', '$http
       name: 'processus'
     };
 
-    $scope.mysql = function () {
-      var host = this.host || 'http://localhost/',
-        port = this.port || 3306,
-        user = this.user || 'root',
-        password = this.password,
-        database = this.dbName,
-        connection = { host: host, port: port, user: user, password: password, database: database };
+    $scope.mysql = function (isValid) {
 
-      $http.get('/api/connectmysql', { params: { connection: connection } }).success(function (tables) {
-        localStorage.setItem('connection', JSON.stringify(connection));
-        localStorage.setItem('tables', JSON.stringify(tables));
-        $state.go('configuration-mongodb');
-      }).error(function (params) {
-        // TODO
-      });
+      if (isValid) {
+        var host = this.host,
+          port = this.port,
+          user = this.user,
+          password = this.password,
+          database = this.dbName,
+          connection = { host: host, port: port, user: user, password: password, database: database };
 
+        $http.get('/api/connectmysql', { params: { connection: connection } }).success(function (tables) {
+          localStorage.setItem('connection', JSON.stringify(connection));
+          localStorage.setItem('tables', JSON.stringify(tables));
+          $state.go('configuration-mongodb');
+        }).error(function (errors) {
+          $scope.error = true;
+          console.log(errors);
+        });
+      } else {
+        console.log(isValid);
+        console.log('nin');
+        $scope.submitted = true;
+      }
 
     };
 
