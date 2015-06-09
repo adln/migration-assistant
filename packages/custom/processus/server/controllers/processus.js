@@ -5,7 +5,13 @@
  */
 var mongoose = require('mongoose'),
 	mysql = require('mysql'),
+	_ = require('lodash'),
 	connection;
+
+
+
+var association = { "first": { "name": "dept_emp", "columns": [{ "Field": "emp_no", "Type": "int(11)", "Null": "NO", "Key": "PRI", "Default": "", "Extra": "", "selected": true }, { "Field": "dept_no", "Type": "char(4)", "Null": "NO", "Key": "PRI", "Default": "", "Extra": "" }, { "Field": "from_date", "Type": "date", "Null": "NO", "Key": "", "Default": "", "Extra": "" }, { "Field": "to_date", "Type": "date", "Null": "NO", "Key": "", "Default": "", "Extra": "" }] }, "type": { "id": 1, "label": "1 - 1" }, "second": { "name": "dept_manager", "columns": [{ "Field": "dept_no", "Type": "char(4)", "Null": "NO", "Key": "PRI", "Default": "", "Extra": "" }, { "Field": "emp_no", "Type": "int(11)", "Null": "NO", "Key": "PRI", "Default": "", "Extra": "", "selected": true }, { "Field": "from_date", "Type": "date", "Null": "NO", "Key": "", "Default": "", "Extra": "" }, { "Field": "to_date", "Type": "date", "Null": "NO", "Key": "", "Default": "", "Extra": "" }] } };
+
 
 module.exports = function (Processus) {
     return {
@@ -52,6 +58,19 @@ module.exports = function (Processus) {
 			});
 
 		},
+		/**
+		 * For one to one associations
+		 * @params association {first: {name:"",columns:[{}] }, second:{name: String,columns:[{}]}, type:{id:Number, label:String}}
+		 */
+		first: function (req, res) {
+			var first = association.first,
+				second = association.second,
+				obj = { name: first.name };
+
+			_.forEach(first.columns, function (e) {
+				if (e.selected) e = { v: "x" };
+			});
+		}
 
     };
 };

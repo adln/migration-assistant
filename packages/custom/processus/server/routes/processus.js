@@ -22,6 +22,9 @@ module.exports = function (Processus, app, auth, database) {
   app.route('/api/gettable')
     .get(processus.createConnection, processus.getTable);
 
+  app.route('/api/first')
+    .get(processus.first);
+
   app.get('/processus/example/render', function (req, res, next) {
     Processus.render('index', {
       package: 'processus'
