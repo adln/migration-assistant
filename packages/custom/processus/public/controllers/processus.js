@@ -11,9 +11,7 @@ angular.module('mean.processus').controller('ProcessusController', ['$scope', 'G
     $scope.mysql = function () {
       $state.go('configuration-mongodb');
     };
-    
-    $rootScope.associations = [];
-    
+
     $scope.back = function () {
       
     };
