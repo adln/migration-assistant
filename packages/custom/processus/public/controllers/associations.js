@@ -81,10 +81,13 @@ angular.module('mean.processus').controller('AssociationsController', ['$scope',
           $scope.tables.push(results);
         });
       }
-      
     };
 
-    
+    $scope.removeAssociation = function (association) {
+      $scope.associations.splice($scope.associations.indexOf(association), 1);
+    };
+
+
     $scope.associations = [];
 
     $scope.addAssociation = function () {
@@ -104,7 +107,8 @@ angular.module('mean.processus').controller('AssociationsController', ['$scope',
     };
 
     $scope.schemas = function () {
-      $state.go('configuration-choix-des-schemas');
+      console.log($scope.associations);
+      // $state.go('configuration-choix-des-schemas');
     };
     $scope.back = function () {
 
