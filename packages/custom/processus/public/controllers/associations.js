@@ -108,7 +108,7 @@ angular.module('mean.processus').controller('AssociationsController', ['$scope',
 
     $scope.schemas = function () {
       console.log($scope.associations);
-      // $state.go('configuration-choix-des-schemas');
+      $state.go('configuration-choix-des-schemas');
     };
     $scope.back = function () {
 
