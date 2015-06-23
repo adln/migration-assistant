@@ -48,7 +48,8 @@
     "serve-favicon": "latest",
     "shelljs": "latest",
     "swig": "latest",
-    "view-helpers": "latest"
+    "view-helpers": "latest",
+    "mongodb": "~2.0.33"
   },
   "devDependencies": {
     "connect-modrewrite": "latest",

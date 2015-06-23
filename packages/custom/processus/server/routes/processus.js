@@ -22,18 +22,18 @@ module.exports = function(Processus, app, auth, database) {
   app.route('/api/gettable')
     .get(processus.createConnection, processus.getTable);
 
-  app.route('/api/first')
-    .get(processus.first);
-  app.route('/api/second')
-    .get(processus.second);
-  app.route('/api/third')
-    .get(processus.third);
-
   app.route('/api/fourth')
     .get(processus.fourth);
-    
-    app.route('/api/fourthData')
-    .get(processus.createConnection, processus.fourthData);
+
+  app.route('/api/schemas')
+    .post(processus.makeSchema);
+
+  app.route('/api/finalSchema')
+    .post(processus.finalSchema);
+
+  app.route('/api/migration')
+    .post(processus.createConnection, processus.migration);
+
 
   app.get('/processus/example/render', function(req, res, next) {
     Processus.render('index', {

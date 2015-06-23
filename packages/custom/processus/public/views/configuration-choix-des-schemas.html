@@ -1,4 +1,4 @@
-<div class="container-fluid col-md-8 col-md-offset-2" data-ng-controller="SchemaController">
+<div class="container-fluid col-md-8 col-md-offset-2" data-ng-controller="SchemaController" ng-init="init()">
 	<h1>Etape 4:
 		<small>Generation des schémas MongoDB</small>
 	</h1>
@@ -13,10 +13,10 @@
 				<div class="col-md-12">
 					<h4>{{table.name}}</h4>
 					<div class="col-md-{{ 12 / table.schema.length}}" data-ng-repeat="schema in table.schema">
-						<pre ng-class="{'bg-primary': ($index == table.selected)}" ng-hide="!schema">{{schema | json}}</pre>
-						<pre ng-class="{'bg-primary': ($index == table.selected)}" ng-if="!schema">Ne pas créer de collection pour <strong>{{table.name}}</strong></pre>
+						<pre ng-class="{'bg-primary': schema.selected}" ng-hide="!schema">{{schema | json}}</pre>
+						<pre ng-class="{'bg-primary': table.selectednull}" ng-if="!schema">Ne pas créer de collection pour <strong>{{table.name}}</strong></pre>
 						<div class="text-center">
-							<label class="btn btn-lg" ng-class="{'btn-primary': ($index == table.selected)}" ng-model="table.selected" btn-radio="$index">
+							<label class="btn btn-lg" ng-class="{'btn-primary': schema.selected || (schema == null && table.selectednull)}" ng-click="selectTable(table,schema)" >
 								<span class="glyphicon glyphicon-ok-circle"></span>
 							</label>
 						</div>

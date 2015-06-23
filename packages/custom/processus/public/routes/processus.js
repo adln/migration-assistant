@@ -17,7 +17,11 @@ angular.module('mean.processus').config(['$stateProvider',
     $stateProvider.state('configuration-choix-des-schemas', {
       url: '/configuration-choix-des-schemas',
       templateUrl: 'processus/views/configuration-choix-des-schemas.html'
-    }); 
+    });
+    $stateProvider.state('configuration-schema-global', {
+      url: '/configuration-schema-global',
+      templateUrl: 'processus/views/configuration-schema-global.html'
+    });
     $stateProvider.state('configuration-migration-donnees', {
       url: '/configuration-migration-donnees',
       templateUrl: 'processus/views/configuration-migration-donnees.html'

@@ -1,14 +1,47 @@
 'use strict';
 
 /* jshint -W098 */
-angular.module('mean.processus').controller('SchemaController', ['$scope', 'Global', 'Processus', '$state', '$rootScope',
-  function($scope, Global, Processus, $state, $rootScope) {
+angular.module('mean.processus').controller('SchemaController', ['$scope', 'Global', 'Processus', '$state', '$rootScope', '$http',
+  function($scope, Global, Processus, $state, $rootScope, $http) {
     $scope.global = Global;
     $scope.package = {
       name: 'processus'
     };
 
+    /*
     $scope.associations = [{
+      "tables": [{
+        "name": "employees",
+        "schema": [{
+          "titles": {
+            "title": "Number",
+            "from_date": "Number",
+            "to_date": "Number"
+          },
+          "birth_date": "Date",
+          "first_name": "String",
+          "last_name": "String",
+          "gender": "Array",
+          "hire_date": "Date"
+        }, null],
+        "request": "SELECT * FROM employees LEFT OUTER JOIN titles ON employees.emp_no = titles.emp_no;"
+      }, {
+        "name": "titles",
+        "schema": [{
+          "employees": {
+            "birth_date": "Number",
+            "first_name": "Number",
+            "last_name": "Number",
+            "gender": "Number",
+            "hire_date": "Number"
+          },
+          "title": "String",
+          "from_date": "Date",
+          "to_date": "Date"
+        }, null],
+        "request": ""
+      }]
+    }, {
       "tables": [{
         "name": "dept_emp",
         "schema": [{
@@ -64,7 +97,6 @@ angular.module('mean.processus').controller('SchemaController', ['$scope', 'Glob
         }, null]
       }]
     }, {
-
       tables: [{
         name: "Commande",
         schema: [{
@@ -86,17 +118,32 @@ angular.module('mean.processus').controller('SchemaController', ['$scope', 'Glob
           Prix: "String"
         }, null]
       }]
-
     }];
-
-
+    */
+    $scope.init = function() {
+      var associations = localStorage.getItem('associations');
+      $http.post('/api/schemas', {
+        associations: associations
+      }).success(function(results) {
+        $scope.associations = results;
+      });
+    };
 
 
     $scope.migration = function() {
-      $state.go('configuration-migration-donnees');
-    };
-    $scope.back = function() {
+      localStorage.setItem('finalAssociations', JSON.stringify($scope.associations));
+      
 
+      // console.log($scope.associations);
+      $state.go('configuration-schema-global');
+    };
+    $scope.selectTable = function(table, schema) {
+      for (var i = 0, length = table.schema.length; i < length; i++) {
+        if(table.schema[i] !== null) delete table.schema[i].selected;
+        else delete table.selectednull;
+      }
+      if(schema !== null) schema.selected = true;
+      else table.selectednull = true;
     };
   }
 ]);

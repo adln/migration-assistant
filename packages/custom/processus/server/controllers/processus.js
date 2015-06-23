@@ -3,100 +3,12 @@
 /**
  * Module dependencies.
  */
-var mongoose = require('mongoose'),
+var MongoClient = require('mongodb').MongoClient,
+	mongoose = require('mongoose'),
 	mysql = require('mysql'),
 	_ = require('lodash'),
 	connection;
 
-
-
-
-var association = {
-	"first": {
-		"name": "employees",
-		"columns": [{
-			"Field": "emp_no",
-			"Type": "int(11)",
-			"Null": "NO",
-			"Key": "PRI",
-			"Default": null,
-			"Extra": "",
-			"selected": true
-		}, {
-			"Field": "birth_date",
-			"Type": "date",
-			"Null": "NO",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "first_name",
-			"Type": "varchar(14)",
-			"Null": "NO",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "last_name",
-			"Type": "varchar(16)",
-			"Null": "NO",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "gender",
-			"Type": "enum('M','F')",
-			"Null": "NO",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "hire_date",
-			"Type": "date",
-			"Null": "NO",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}]
-	},
-	"type": {
-		"id": 1,
-		"label": "1 - 1"
-	},
-	"second": {
-		"name": "titles",
-		"columns": [{
-			"Field": "emp_no",
-			"Type": "int(11)",
-			"Null": "NO",
-			"Key": "PRI",
-			"Default": null,
-			"Extra": "",
-			"selected": true
-		}, {
-			"Field": "title",
-			"Type": "varchar(50)",
-			"Null": "NO",
-			"Key": "PRI",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "from_date",
-			"Type": "date",
-			"Null": "NO",
-			"Key": "PRI",
-			"Default": null,
-			"Extra": ""
-		}, {
-			"Field": "to_date",
-			"Type": "date",
-			"Null": "YES",
-			"Key": "",
-			"Default": null,
-			"Extra": ""
-		}]
-	}
-};
 
 function DataTypes() {
 	this.strings = ['CHARACTER', 'VARCHAR', 'CHAR'];
@@ -181,20 +93,136 @@ function getId(first, second) {
 	});
 
 	return {
-		firstId: firstId,
-		secondId: secondId
+		first: {
+			name: first.name,
+			id: firstId
+		},
+		second: {
+			name: second.name,
+			id: secondId
+		}
 	};
 }
 
+function MongoInsert(collec, data, next) {
+	MongoClient.connect("mongodb://localhost:27017/mean-dev", {
+		native_parser: true
+	}, function(err, db) {
+		if (err) {
+			return console.dir(err);
+		}
+		var collection = db.collection(collec);
+		collection.insert(data, function(err, result) {
+
+			next(data._id);
+			db.close();
+		})
+
+	});
+}
+
+function MongoUpdate(collec, prop, data, id, isArray) {
+
+	MongoClient.connect("mongodb://localhost:27017/mean-dev", {
+		native_parser: true
+	}, function(err, db) {
+		if (err) {
+			return console.dir(err);
+		}
+		var collection = db.collection(collec);
+		var obj = {},
+			newObj = {};
+		obj[prop] = data;
+
+		if (isArray) {
+			newObj = {
+				$push: obj
+			};
+		}
+		else {
+			newObj = {
+				$set: obj
+			};
+
+		}
+
+		collection.update({
+			_id: id
+		}, newObj, function(err, result) {
+
+			db.close();
+		});
+
+	});
+}
+
+/**
+ * For one to one associations
+ * @params association {first: {name:"",columns:[{}] }, second:{name: String,columns:[{}]}, type:{id:Number, label:String}}
+ */
+function first(association) {
+	var first = association.first,
+		second = association.second,
+		obj1 = {
+			name: first.name,
+			schema: [],
+			request: ''
+		},
+		obj2 = {
+			name: second.name,
+			schema: [],
+			request: ''
+		},
+		Ids = getId(first, second);
+
+
+	obj1.schema.push(_embed(first, second));
+	obj1.ids = Ids;
+	obj1.schema.push(null);
+
+	obj2.schema.push(_embed(second, first));
+	obj2.ids = Ids;
+	obj2.schema.push(null);
+
+	return {
+		tables: [obj1, obj2]
+	};
+};
+
+function second_third(association) {
+	var first = association.first,
+		second = association.second,
+		obj1 = {
+			name: first.name,
+			schema: [],
+			request: ''
+		},
+		obj2 = {
+			name: second.name,
+			schema: [],
+			request: ''
+		},
+		Ids = getId(first, second);
+	obj1.schema.push(_embed(first, second, true));
+	obj1.ids = Ids;
+	obj1.schema.push(null);
+
+	obj2.schema.push(_embed(second, first, false));
+	obj2.ids = Ids;
+	obj2.schema.push(null);
+	return {
+		tables: [obj1, obj2]
+	};
+}
 
 module.exports = function(Processus) {
 	return {
 		createConnection: function(req, res, next) {
 			var connect = JSON.parse(req.query.connection || "{}"),
 				host = connect.host || 'localhost',
-				port = connect.port,
-				user = connect.user || 'adln1',
-				password = connect.password,
+				port = connect.port || 3306,
+				user = connect.user || 'root',
+				password = connect.password || 'Azerty12',
 				database = connect.database || 'employees';
 
 			connection = mysql.createConnection({
@@ -204,7 +232,6 @@ module.exports = function(Processus) {
 				password: password,
 				database: database
 			});
-			console.log(connection);
 			next();
 		},
 		connectMysql: function(req, res) {
@@ -232,63 +259,6 @@ module.exports = function(Processus) {
 			});
 
 		},
-		/**
-		 * For one to one associations
-		 * @params association {first: {name:"",columns:[{}] }, second:{name: String,columns:[{}]}, type:{id:Number, label:String}}
-		 */
-		first: function(req, res) {
-			var first = association.first,
-				second = association.second,
-				obj1 = {
-					name: first.name,
-					schema: [],
-					request: ''
-				},
-				obj2 = {
-					name: second.name,
-					schema: [],
-					request: ''
-				},
-				Ids = getId(first, second);
-			console.log("SELECT * FROM " + first.name + " LEFT OUTER JOIN " + second.name + " ON " + first.name + "." + Ids.firstId + " = " + second.name + "." + Ids.secondId + ";");
-
-
-			obj1.schema.push(_embed(first, second));
-			obj1.request = "SELECT * FROM " + first.name + " LEFT OUTER JOIN " + second.name + " ON " + first.name + "." + Ids.firstId + " = " + second.name + "." + Ids.secondId + ";";
-			obj1.schema.push(null);
-
-			obj2.schema.push(_embed(second, first));
-			obj1.schema.request = getId(second, first);
-			obj2.schema.push(null);
-
-			res.json({
-				tables: [obj1, obj2]
-			});
-		},
-		second: function(req, res) {
-			var first = association.first,
-				second = association.second,
-				obj1 = {
-					name: first.name,
-					schema: []
-				};
-			obj1.schema.push(_embed(first, second, true));
-			res.json({
-				tables: [obj1]
-			})
-		},
-		third: function(req, res) {
-			var first = association.first,
-				second = association.second,
-				obj1 = {
-					name: second.name,
-					schema: []
-				};
-			obj1.schema.push(_embed(second, first, true));
-			res.json({
-				tables: [obj1]
-			});
-		},
 		fourth: function(req, res) {
 			var dataTypes = new DataTypes(),
 				document1 = {
@@ -306,20 +276,165 @@ module.exports = function(Processus) {
 			_.forOwn(association.second.columns, function(value, key) {
 				document2['schema'][0][value.Field] = dataTypes.getType(value.Type);
 			});
-			res.json([
-				document1, document2
-			]);
+			res.json({
+				tables: [document1, document2]
+			});
+		},
+		makeSchema: function(req, res) {
+
+			var associations = JSON.parse(req.body.associations) || [],
+				schemas = [];
+
+			for (var i = 0, length = associations.length; i < length; i++) {
+
+				switch (associations[i].type.id) {
+					case 1:
+						schemas.push(first(associations[i]));
+						break;
+					case 2:
+						schemas.push(second_third(associations[i]));
+						break;
+				}
+			}
+			res.json(schemas);
+		},
+		finalSchema: function(req, res) {
+			var associations = JSON.parse(req.body.associations),
+				list = [],
+				schemas = [],
+				Ids = [];
+
+			for (var i = 0, length = associations.length; i < length; i++) {
+				_.each(associations[i].tables, function(item) {
+
+					_.each(item.schema, function(e) {
+						if (e !== null)
+							if (e.selected) list.push({
+								name: item.name,
+								schema: e,
+								ids: item.ids
+							});
+					});
+
+				});
+			}
+			for (var i = 0, length = list.length; i < length; i++) {
+				var obj = {},
+					schemas_names = schemas.map(function(e) {
+						return e.name;
+					});
+
+				if (schemas_names.indexOf(list[i].name) === -1) {
+					obj.name = list[i].name;
+					obj.schema = {};
+					obj.ids = [];
+					obj.ids.push(list[i].ids);
+					_.forOwn(list[i].schema, function(value, key) {
+						if (key !== 'selected') obj.schema[key] = value;
+					});
+					schemas.push(obj);
+				}
+				else {
+					_.each(schemas, function(item) {
+						if (item.name == list[i].name) {
+							item.ids.push(list[i].ids);
+
+							_.forOwn(list[i].schema, function(value, key) {
+								if (!item.schema[key] && key !== 'selected') {
+									item.schema[key] = value;
+								}
+							})
+						}
+					});
+				}
+			}
+
+			res.json(schemas);
+		},
+		migration: function(req, res) {
+			var schema = JSON.parse(req.body.schema);
+				// schema = schemas[1];
+
+			//for (var i = 0, length = schemas.length; i < length; i++) {
+			// get the value
+			connection.query('SELECT * FROM ' + schema.name + ' LIMIT 10', function(err, lines) {
+				// for each line
+				_.forEach(lines, function(line) {
+					// the new document
+					var obj = {};
+
+					// create the main document
+					_.forOwn(schema.schema, function(value, key) {
+						var type = Object.prototype.toString.call(value);
+						if (type == '[object String]') {
+							if (line[key]) obj[key] = line[key];
+						}
+					});
+
+					// after the creation of the first document, add the embedded documents to it
+					MongoInsert(schema.name, obj, function(_id) {
+
+						_.forOwn(schema.schema, function(value, key) {
+
+							var type = Object.prototype.toString.call(value);
+
+							// if object, get all related data
+							if (type == '[object Array]') {
+								// get the foreign key to gett related data
+								_.forEach(schema.ids, function(element) {
+
+									if (element.second.name == key) {
+										var id = element.second.id,
+											sql = 'SELECT * FROM ' + key + ' WHERE ' + key + '.' + id + '="' + line[id] + '"';
+										obj[key] = [];
+										connection.query(sql, function(err, subs) {
+
+											_.forEach(subs, function(sub) {
+												var obj1 = {};
+												_.forOwn(schema.schema[key][0], function(value1, key1) {
+													if (sub[key1]) obj1[key1] = sub[key1];
+												});
+
+												MongoUpdate(schema.name, key, obj1, _id, true);
+											})
+										});
+
+									}
+								});
+							}
+							else if (type == '[object Object]') {
+								// get the foreign key to gett related data
+								_.forEach(schema.ids, function(element) {
+
+									if (element.second.name == key) {
+										var id = element.second.id,
+											sql = 'SELECT * FROM ' + key + ' WHERE ' + key + '.' + id + '="' + line[id] + '" LIMIT 1';
+										connection.query(sql, function(err, sub) {
+											if (err) console.log(err);
+											var obj2 = {};
+											_.forOwn(schema.schema[key], function(value1, key1) {
+												if (sub[0][key1]) obj2[key1] = sub[0][key1];
+											});
+											MongoUpdate(schema.name, key, obj2, _id, false);
+
+										});
+
+									}
+								});
+							}
+						});
+					});
+					// for each schema property
+
+
+				});
+
+				res.json({});
+			});
+
+			// }
+			// res.json({});
 		},
 
-
-		//Extract and merge data partially
-		fourthData: function(req, res /*table1, table2*/ ) {
-			connection.query("SELECT * FROM employees" /* + table1*/ , function(err, rows) {
-				console.log(err);
-				res.json({
-					rows: rows
-				});
-			});
-		}
 	};
 };
