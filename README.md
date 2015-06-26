@@ -1,5 +1,5 @@
 # MySQL to MongoDB Migration assistant
-This module will help you to migrate data from MySQL to MongoDB, it's a MEAN.IO package.
+This package will help on the migration process from MySQL to MongoDB, it's a MEAN.IO package.
 # Installation
 ## Prerequisite Technologies
 ### Linux
